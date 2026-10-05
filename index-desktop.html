@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>68天上岸计划 · 四级冲刺 + 数据开发技能</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6fb; --card:#ffffff; --ink:#1c2333; --muted:#6b7385; --line:#e6e9f2;
+  --accent:#5058e8; --en:#0ea5e9; --sk:#8b5cf6; --ok:#16a34a; --warn:#f59e0b;
+  --radius:16px; --shadow:0 6px 26px rgba(30,40,90,.07);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;padding-bottom:60px}
+.wrap{max-width:960px;margin:0 auto;padding:18px}
+
+/* ---------- HERO ---------- */
+.hero{background:linear-gradient(135deg,#5058e8,#7a5cf0 55%,#9b5cf0);border-radius:22px;color:#fff;
+  padding:26px 26px 22px;box-shadow:0 14px 40px rgba(80,88,232,.28);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;
+  background:radial-gradient(circle,rgba(255,255,255,.25),transparent 70%);border-radius:50%}
+.hero h1{font-size:26px;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
+.hero .sub{opacity:.9;font-size:14px;margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}
+.chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);border-radius:12px;
+  padding:9px 14px;backdrop-filter:blur(6px)}
+.chip .k{font-size:11px;opacity:.85}
+.chip .v{font-size:19px;font-weight:700;letter-spacing:.3px}
+.chip.hot .v{color:#ffe28a}
+
+/* ---------- NAV ---------- */
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 16px}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:14px;font-weight:600;
+  padding:9px 16px;border-radius:999px;cursor:pointer;transition:.18s;font-family:inherit}
+nav button:hover{border-color:var(--accent);color:var(--accent)}
+nav button.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(80,88,232,.28)}
+section{display:none;animation:fade .25s ease}
+section.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:20px;margin-bottom:16px}
+.card h2{font-size:17px;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.card .hint{color:var(--muted);font-size:13px;margin-bottom:14px}
+
+/* ---------- PROGRESS ---------- */
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.prog-num{font-size:15px;font-weight:700}
+.bar{height:12px;background:#eceffb;border-radius:999px;overflow:hidden}
+.bar > i{display:block;height:100%;width:0;border-radius:999px;
+  background:linear-gradient(90deg,#5058e8,#9b5cf0);transition:width .35s ease}
+.streak{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--warn)}
+
+/* ---------- TASK LIST ---------- */
+.group-title{font-size:14px;font-weight:700;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%}
+.dot.en{background:var(--en)} .dot.sk{background:var(--sk)}
+.todo{display:flex;gap:13px;align-items:flex-start;padding:12px 13px;border:1px solid var(--line);
+  border-radius:13px;margin-bottom:9px;cursor:pointer;transition:.16s;background:#fdfdff}
+.todo:hover{border-color:#c9cef5;background:#f8f9ff}
+.todo.done{background:#f3fbf5;border-color:#c6ecd4}
+.box{flex:0 0 22px;width:22px;height:22px;border:2px solid #c7cbdc;border-radius:7px;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;transition:.16s;font-size:14px;color:#fff}
+.todo.done .box{background:var(--ok);border-color:var(--ok)}
+.todo .body{flex:1}
+.todo .t{font-weight:650;font-size:15px}
+.todo.done .t{text-decoration:line-through;color:var(--muted)}
+.todo .s{font-size:13px;color:var(--muted);margin-top:2px}
+.todo .s b{color:var(--accent);font-weight:650}
+.time{flex:0 0 auto;font-size:12px;color:var(--muted);background:#eef0f8;border-radius:8px;padding:2px 8px;font-weight:600}
+.done-banner{display:none;text-align:center;font-weight:700;color:var(--ok);background:#f0fbf4;
+  border:1px dashed #b9e6c9;border-radius:13px;padding:14px;margin-top:8px}
+.done-banner.show{display:block}
+
+/* ---------- TABLE ---------- */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:10px 9px;text-align:left;vertical-align:top}
+.tbl th{background:#f7f8fd;font-size:12.5px;color:var(--muted);font-weight:700;white-space:nowrap}
+.tbl tr.cur{background:#fff8e8}
+.tbl tr.cur td:first-child{border-left:4px solid var(--warn)}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.p1{background:#e6f5ff;color:#0b7fb8}.pill.p2{background:#f3ecff;color:#7a4fd0}.pill.p3{background:#ffefe0;color:#c9700a}
+
+/* ---------- SKILL MAP ---------- */
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:780px){.cols{grid-template-columns:1fr}}
+.track{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fdfdff}
+.track h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.syll{list-style:none;font-size:13.3px}
+.syll li{display:flex;gap:9px;align-items:flex-start;padding:6px 0;cursor:pointer;color:#33405c}
+.syll li .cb{flex:0 0 17px;width:17px;height:17px;border:2px solid #ccd0e2;border-radius:5px;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:.15s}
+.syll li.done .cb{background:var(--ok);border-color:var(--ok)}
+.syll li.done span{text-decoration:line-through;color:#9aa2b6}
+
+/* ---------- RESOURCE ---------- */
+.res{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:780px){.res{grid-template-columns:1fr}}
+.res a{display:block;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:12px;
+  padding:12px 14px;background:#fdfdff;transition:.16s}
+.res a:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 20px rgba(80,88,232,.12)}
+.res a .rt{font-weight:650;font-size:14px}
+.res a .rd{font-size:12.5px;color:var(--muted);margin-top:2px}
+.note{background:#f7f8fd;border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:12px 15px;
+  font-size:13.5px;color:#33405c;margin-top:12px}
+.note b{color:var(--accent)}
+.small{font-size:12px;color:var(--muted);margin-top:14px;text-align:center}
+
+/* ---------- PRINT ---------- */
+@media print{
+  body{background:#fff}
+  nav,.hero,.streak,.chips{display:none}
+  section{display:block!important;page-break-inside:avoid}
+  .card{box-shadow:none;border:1px solid #ccc}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>🏁 68天上岸计划</h1>
+    <div class="sub">四级冲刺 × 数据开发技能（Java / SQL / Linux 从零起步） · 每日 4–5 小时</div>
+    <div class="chips">
+      <div class="chip"><div class="k">今天</div><div class="v" id="c-today">—</div></div>
+      <div class="chip hot"><div class="k">距离四级考试</div><div class="v"><span id="c-exam">—</span> 天</div></div>
+      <div class="chip"><div class="k">已坚持第</div><div class="v"><span id="c-day">—</span> / 68 天</div></div>
+      <div class="chip"><div class="k">连续打卡</div><div class="v">🔥 <span id="c-streak">0</span> 天</div></div>
+    </div>
+  </header>
+
+  <nav>
+    <button class="active" data-tab="today">✅ 今日打卡</button>
+    <button data-tab="roadmap">🗺️ 9周路线图</button>
+    <button data-tab="cet">🎯 四级专项</button>
+    <button data-tab="skills">💻 技能地图</button>
+    <button data-tab="res">📚 资源库</button>
+  </nav>
+
+  <!-- ============ 今日打卡 ============ -->
+  <section id="today" class="active">
+    <div class="card">
+      <div class="prog-top">
+        <div>
+          <h2>📌 今日任务 <span id="week-tag" style="font-size:12px;color:var(--muted);font-weight:500"></span></h2>
+          <div class="hint" id="week-focus" style="margin:4px 0 0"></div>
+        </div>
+        <div class="prog-num"><span id="done-n">0</span>/8 完成</div>
+      </div>
+      <div class="bar"><i id="progbar"></i></div>
+
+      <div class="group-title"><span class="dot en"></span> 英语 · 四级（约 2 小时）</div>
+      <div id="list-en"></div>
+
+      <div class="group-title"><span class="dot sk"></span> 专业技能（约 2.5 小时）</div>
+      <div id="list-sk"></div>
+
+      <div class="done-banner" id="banner">🎉 今天的任务全部完成，为自己鼓掌！明天见。</div>
+      <div class="note" style="margin-top:16px">
+        <b>时间不够怎么办？</b> 按这个优先级砍，保住前三个：① SQL ② 单词 ③ 听力 → 其余可顺延。
+        宁可每天真练 2 小时，也不要"计划 5 小时、执行 0 小时"。
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 9周路线图 ============ -->
+  <section id="roadmap">
+    <div class="card">
+      <h2>🗺️ 十周作战路线（10.05 → 12.12）</h2>
+      <div class="hint">橙色高亮 = 当前所在周。每周只求"过一遍、动过手"，不要求全记住。</div>
+      <div style="overflow-x:auto">
+      <table class="tbl" id="roadmap-tbl">
+        <thead><tr><th>周</th><th>日期</th><th>阶段</th><th>🅴 英语</th><th>🗄️ SQL</th><th>🐧 Linux</th><th>☕ Java</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      </div>
+      <div class="note">
+        <b>三个阶段的节奏：</b>
+        第1–4周打基础（别图快，把每个概念动手敲一遍）；
+        第5–8周上强度（真题 + 题库，开始暴露问题）；
+        第9–10周全真冲刺（模考 + 错题复盘 + 调作息，最后一周别学新东西）。
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 四级专项 ============ -->
+  <section id="cet">
+    <div class="card">
+      <h2>🎯 四级题型 & 分值（总分 710，425 过线）</h2>
+      <div class="hint">分值越高越要抓。仔细阅读（20%）+ 听力（35%）= 一半以上分数。</div>
+      <table class="tbl">
+        <thead><tr><th>部分</th><th>题型</th><th>分值</th><th>建议用时</th></tr></thead>
+        <tbody>
+          <tr><td>写作</td><td>短文写作</td><td>15%</td><td>30 分钟</td></tr>
+          <tr><td>听力</td><td>短篇新闻3 + 长对话2 + 听力篇章3</td><td>35%</td><td>25 分钟</td></tr>
+          <tr><td>阅读</td><td>选词填空5% + 长篇匹配10% + 仔细阅读20%</td><td>35%</td><td>40 分钟</td></tr>
+          <tr><td>翻译</td><td>汉译英段落（中国文化/社会）</td><td>15%</td><td>30 分钟</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>💡 各题型提分要点</h2>
+      <table class="tbl">
+        <tbody>
+          <tr><td style="white-space:nowrap"><b>单词</b></td><td>一切的根。每天 50 个，用墨墨/不背单词，只求"认识"，不求会拼。</td></tr>
+          <tr><td style="white-space:nowrap"><b>听力</b></td><td>精听 &gt; 泛听。1 篇真题反复听 3 遍：盲听→逐句听写→对照原文跟读。抓转折词 but/however、数字、地点。</td></tr>
+          <tr><td style="white-space:nowrap"><b>仔细阅读</b></td><td>分值最高。先看题干圈关键词 → 回原文定位 → 比对选项。别通读全文浪费时间。</td></tr>
+          <tr><td style="white-space:nowrap"><b>选词填空</b></td><td>先按词性给 15 个词分类（名/动/形/副），再按空格前后判断词性，最后代入通顺度。性价比低，可放最后做。</td></tr>
+          <tr><td style="white-space:nowrap"><b>长篇匹配</b></td><td>先读题干找专有名词/数字，再扫段落首末句找对应，通常是"送分题"。</td></tr>
+          <tr><td style="white-space:nowrap"><b>写作</b></td><td>11 月起背 3 类模板（议论/图表/书信），准备 20 个高级替换词，考前默写。</td></tr>
+          <tr><td style="white-space:nowrap"><b>翻译</b></td><td>先搭主谓宾骨架，再补修饰。专有名词提前背（春节/高铁/书法等中国主题词）。</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><b>真题是唯一真理：</b>近 5 年（约 10 套）真题吃透，比刷 100 个 APP 有用。11 月开始每套限时 140 分钟完整做。</div>
+    </div>
+  </section>
+
+  <!-- ============ 技能地图 ============ -->
+  <section id="skills">
+    <div class="card">
+      <h2>💻 技能地图（勾选你已掌握的知识点）</h2>
+      <div class="hint">从零开始，按顺序学。SQL 最重要、最该先学；Linux 边用边学；Java 是长线，每天固定投入。</div>
+      <div class="cols">
+        <div class="track">
+          <h3>🗄️ SQL <span style="font-size:11px;color:var(--muted)">（最高优先级）</span></h3>
+          <ul class="syll" data-track="sql"></ul>
+        </div>
+        <div class="track">
+          <h3>🐧 Linux <span style="font-size:11px;color:var(--muted)">（边用边学）</span></h3>
+          <ul class="syll" data-track="linux"></ul>
+        </div>
+        <div class="track">
+          <h3>☕ Java <span style="font-size:11px;color:var(--muted)">（长线投入）</span></h3>
+          <ul class="syll" data-track="java"></ul>
+        </div>
+      </div>
+      <div class="note">
+        <b>为什么 SQL 排第一？</b> 数据开发岗位面试几乎必考 SQL，而且它是你现有 Hadoop 环境（Hive/Spark SQL）的直接基础。
+        学 SQL 最好的方式不是看视频，是打开牛客网 SQL 题库，从第一题开始一题一题敲。
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 资源库 ============ -->
+  <section id="res">
+    <div class="card">
+      <h2>📚 打开即用的学习资源</h2>
+      <div class="hint">都是免费或常见的，收藏起来，别到处找资料浪费时间。</div>
+      <div class="res">
+        <a href="https://www.nowcoder.com/exam/oj?tab=SQL%E7%AF%87" target="_blank"><div class="rt">牛客网 · SQL 题库</div><div class="rd">数据岗必备，从入门到进阶一题题刷</div></a>
+        <a href="https://leetcode.cn/problemset/database/" target="_blank"><div class="rt">LeetCode · 数据库题</div><div class="rd">进阶 SQL 练习，面试高频</div></a>
+        <a href="https://sqlzoo.net/" target="_blank"><div class="rt">SQLZoo</div><div class="rd">英文交互式 SQL 入门，边学边练</div></a>
+        <a href="https://www.runoob.com/sql/sql-tutorial.html" target="_blank"><div class="rt">菜鸟教程 · SQL</div><div class="rd">查语法用，中文速查手册</div></a>
+        <a href="https://www.runoob.com/linux/linux-tutorial.html" target="_blank"><div class="rt">菜鸟教程 · Linux</div><div class="rd">常用命令速查，配你的 Ubuntu 虚拟机练</div></a>
+        <a href="https://liaoxuefeng.com/books/java/introduction/index.html" target="_blank"><div class="rt">廖雪峰 · Java 教程</div><div class="rd">免费系统教程，适合零基础啃</div></a>
+        <a href="https://www.bilibili.com/video/BV1fh411y7R8" target="_blank"><div class="rt">B站 · 韩顺平 Java</div><div class="rd">口碑最好的零基础 Java 视频课</div></a>
+        <a href="https://www.bilibili.com/video/BV1n5411777G" target="_blank"><div class="rt">B站 · 四级听力/真题</div><div class="rd">搜索"四级真题 精听"跟练</div></a>
+      </div>
+      <div class="note">
+        <b>工具建议：</b>背单词用「墨墨背单词」或「不背单词」；SQL 练习直接用浏览器打开牛客；Linux 就在你已有的
+        <b>VMware Ubuntu 虚拟机</b>里敲（D:\vm-ubuntu22），别怕弄坏，坏了大不了重装。
+      </div>
+      <div class="note" style="border-left-color:var(--warn)">
+        <b>一句实话：</b>这份计划能不能成，差别不在计划本身，在于你今天有没有打开它、勾第一下。
+        每天只要真练 2 小时并打卡，68 天后你会明显不是现在的你。
+      </div>
+      <div class="small">数据保存在本机浏览器（localStorage）。打印：Ctrl+P 可直接出纸质版。</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ====== 关键日期 ====== */
+var START = new Date(2026, 9, 5);      // 2026-10-05 开始
+var EXAM  = new Date(2026, 11, 12);    // 2026-12-12 四级（以准考证为准）
+var INTERN= new Date(2027, 2, 15);     // 约 2027-03-15 暑期实习投递
+
+/* ====== 十周路线数据 ====== */
+var WEEKS = [
+ {n:1, range:"10.05–10.11", ph:1, en:"听力:短篇新闻精听; 语法:基本句型+时态",
+  sql:"装 MySQL; SELECT / WHERE / ORDER BY / LIMIT", linux:"命令行入门: ls / cd / pwd / mkdir / man",
+  java:"装 JDK+IDEA; HelloWorld; 变量与数据类型"},
+ {n:2, range:"10.12–10.18", ph:1, en:"听力:长对话; 语法:名词性/定语从句",
+  sql:"聚合函数 COUNT/SUM/AVG; GROUP BY / HAVING", linux:"文件操作 cp/mv/rm/cat/less; 权限 chmod",
+  java:"运算符; 流程控制 if / switch"},
+ {n:3, range:"10.19–10.25", ph:1, en:"阅读:仔细阅读+题干定位; 长难句拆解",
+  sql:"多表连接 INNER / LEFT / RIGHT JOIN", linux:"管道 | 与重定向; grep / find; vim 基础",
+  java:"循环 for / while; 方法定义与调用"},
+ {n:4, range:"10.26–11.01", ph:1, en:"选词填空(词性分类); 翻译入门",
+  sql:"子查询; 常用日期/字符串函数", linux:"压缩 tar/gzip; 进程 ps/top/kill; apt 装软件",
+  java:"数组; 字符串 String 常用方法"},
+ {n:5, range:"11.02–11.08", ph:2, en:"真题第 1 套(摸底) + 错题分析",
+  sql:"窗口函数入门 ROW_NUMBER / RANK", linux:"环境变量; 网络 ping/curl; ssh",
+  java:"面向对象: 类 / 对象 / 封装"},
+ {n:6, range:"11.09–11.15", ph:2, en:"听力 & 阅读专项突破",
+  sql:"索引 / 事务 / 视图 概念", linux:"Shell 脚本基础: 变量 / if / for",
+  java:"继承 / 多态 / 接口"},
+ {n:7, range:"11.16–11.22", ph:2, en:"写作模板+仿写; 翻译专项",
+  sql:"综合练习: 牛客 SQL 进阶", linux:"脚本练习; crontab 定时任务",
+  java:"集合框架 List / Map / Set"},
+ {n:8, range:"11.23–11.29", ph:2, en:"套题 2–3 套; 长篇匹配技巧",
+  sql:"复习 + 多表综合题", linux:"维护命令; 结合 Hadoop 常用命令",
+  java:"异常处理; IO 流文件读写"},
+ {n:9, range:"11.30–12.06", ph:3, en:"隔天模考 + 复盘; 作文默写",
+  sql:"保持刷题: 每天 2 题", linux:"复习常用命令",
+  java:"多线程入门; 小项目开工"},
+ {n:10,range:"12.07–12.12", ph:3, en:"全真模拟; 高频词; 调作息",
+  sql:"查漏补缺", linux:"复盘", java:"完成小项目(学生管理系统)"}
+];
+
+/* ====== 每日任务 ====== */
+var ITEMS = [
+ {id:"en1", tr:"en", t:"单词打卡", s:"50 个新词 + 复习昨天的（墨墨 / 不背单词）", time:"30min"},
+ {id:"en2", tr:"en", t:"听力精听", s:"1 篇四级真题听力：盲听→听写→跟读", time:"30min"},
+ {id:"en3", tr:"en", t:"阅读训练", s:"1 篇仔细阅读 + 3 个长难句拆解", time:"40min"},
+ {id:"en4", tr:"en", t:"四级本周专项", s:"", dyn:"en", time:"30min"},
+ {id:"sk1", tr:"sk", t:"Linux", s:"", dyn:"linux", time:"30min"},
+ {id:"sk2", tr:"sk", t:"SQL", s:"", dyn:"sql", time:"60min"},
+ {id:"sk3", tr:"sk", t:"Java", s:"", dyn:"java", time:"60min"},
+ {id:"sk4", tr:"sk", t:"动手实践", s:"敲代码 / 做题——只许动手，不许只看视频", time:"15min"}
+];
+
+/* ====== 技能地图 ====== */
+var SYLL = {
+ sql:["装 MySQL & 基本概念（库/表/字段/主键）","SELECT / WHERE / ORDER BY / LIMIT","聚合函数 + GROUP BY + HAVING",
+      "多表连接 INNER / LEFT / RIGHT JOIN","子查询 & 常用函数（日期/字符串）","窗口函数 ROW_NUMBER / RANK / SUM OVER",
+      "索引、事务、视图概念","牛客 SQL 题库刷完「入门 + 进阶」"],
+ linux:["目录导航 ls / cd / pwd / mkdir / touch","文件操作 cp / mv / rm / cat / less / head / tail",
+      "权限 chmod / chown + 用户","管道 | 与重定向 > >>","查找 grep / find","编辑器 vim 基本操作",
+      "压缩解压 tar / gzip / zip","进程 ps / top / kill + 软件安装 apt","环境变量 + 网络 ping / curl + ssh",
+      "Shell 脚本基础（变量 / if / for）+ crontab"],
+ java:["装 JDK + IDEA，跑通 HelloWorld","变量与数据类型、运算符","流程控制 if / switch / for / while",
+      "方法定义与调用、参数、返回值","数组 + 字符串 String 常用方法","面向对象：类 / 对象 / 封装",
+      "继承 / 多态 / 接口 / 抽象类","集合框架 List / Map / Set","异常处理 try-catch","IO 流文件读写",
+      "多线程入门","小项目：学生管理系统 / 图书管理系统"]
+};
+
+/* ====== 工具函数 ====== */
+function day0(d){ d=new Date(d); d.setHours(0,0,0,0); return d; }
+function todayKey(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function daysBetween(a,b){ return Math.round((day0(b)-day0(a))/86400000); }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function LS(k,def){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
+function LSSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+
+/* ====== 顶部统计 ====== */
+function renderHeader(){
+  var now=new Date();
+  document.getElementById("c-today").textContent = (now.getMonth()+1)+"月"+now.getDate()+"日";
+  var de=daysBetween(now,EXAM);
+  document.getElementById("c-exam").textContent = de>0?de:(de===0?"今天开考!":"已考完");
+  var dn=clamp(daysBetween(START,now)+1,1,68);
+  document.getElementById("c-day").textContent = dn;
+  document.getElementById("c-streak").textContent = calcStreak();
+}
+
+function getWeekIdx(now){
+  var wk=Math.floor(daysBetween(START,now)/7);
+  return clamp(wk,0,WEEKS.length-1);
+}
+
+/* ====== 今日任务渲染 ====== */
+var STORE="hermes_checkin_v1";
+function renderToday(){
+  var now=new Date(), wi=getWeekIdx(now), W=WEEKS[wi];
+  var key=todayKey(), store=LS(STORE,{}), today=store[key]||{};
+
+  var tg=document.getElementById("week-tag");
+  tg.textContent = "· 第"+W.n+"周（"+W.range+"）";
+  var phName = W.ph===1?"基础期":(W.ph===2?"强化期":"冲刺期");
+  document.getElementById("week-focus").innerHTML =
+     "<b>"+phName+"</b> 本周重点 → 英语："+W.en+" ｜ SQL："+W.sql+" ｜ Linux："+W.linux+" ｜ Java："+W.java;
+
+  var listEn=document.getElementById("list-en"), listSk=document.getElementById("list-sk");
+  listEn.innerHTML=""; listSk.innerHTML="";
+  var doneCount=0;
+
+  ITEMS.forEach(function(it){
+    var sub = it.dyn ? ("本周："+W[it.dyn]) : it.s;
+    var el=document.createElement("div");
+    el.className="todo"+(today[it.id]?" done":"");
+    el.innerHTML='<div class="box">'+(today[it.id]?"✓":"")+'</div><div class="body"><div class="t">'+it.t+
+      '</div><div class="s">'+sub+'</div></div><div class="time">'+it.time+'</div>';
+    el.onclick=function(){ toggle(it.id); };
+    (it.tr==="en"?listEn:listSk).appendChild(el);
+    if(today[it.id]) doneCount++;
+  });
+
+  document.getElementById("done-n").textContent=doneCount;
+  document.getElementById("progbar").style.width=(doneCount/ITEMS.length*100)+"%";
+  document.getElementById("banner").classList.toggle("show",doneCount===ITEMS.length);
+}
+
+function toggle(id){
+  var key=todayKey(), store=LS(STORE,{}), today=store[key]||{};
+  if(today[id]) delete today[id]; else today[id]=true;
+  if(Object.keys(today).length===0) delete store[key]; else store[key]=today;
+  LSSet(STORE,store);
+  renderToday(); renderHeader();
+}
+
+function calcStreak(){
+  var store=LS(STORE,{}), s=0, d=new Date();
+  // 若今天还没勾，从昨天起算连续天数（今天不算断）
+  var t=todayKey();
+  if(!store[t] || Object.keys(store[t]).length < ITEMS.length*0.6) d.setDate(d.getDate()-1);
+  for(var i=0;i<400;i++){
+    var k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    var rec=store[k];
+    if(rec && Object.keys(rec).length >= ITEMS.length*0.6){ s++; d.setDate(d.getDate()-1); }
+    else break;
+  }
+  return s;
+}
+
+/* ====== 路线图渲染 ====== */
+function renderRoadmap(){
+  var tb=document.querySelector("#roadmap-tbl tbody"), wi=getWeekIdx(new Date());
+  tb.innerHTML="";
+  WEEKS.forEach(function(W,i){
+    var ph=W.ph===1?'<span class="pill p1">基础</span>':W.ph===2?'<span class="pill p2">强化</span>':'<span class="pill p3">冲刺</span>';
+    var tr=document.createElement("tr");
+    if(i===wi) tr.className="cur";
+    tr.innerHTML="<td><b>"+W.n+"</b></td><td>"+W.range+"</td><td>"+ph+"</td><td>"+W.en+"</td><td>"+W.sql+"</td><td>"+W.linux+"</td><td>"+W.java+"</td>";
+    tb.appendChild(tr);
+  });
+}
+
+/* ====== 技能地图渲染 ====== */
+var SYLLKEY="hermes_syllabus_v1";
+function renderSkills(){
+  var store=LS(SYLLKEY,{});
+  document.querySelectorAll(".syll").forEach(function(ul){
+    var track=ul.getAttribute("data-track");
+    ul.innerHTML="";
+    SYLL[track].forEach(function(item,i){
+      var id=track+"-"+i, on=store[id];
+      var li=document.createElement("li");
+      li.className=on?"done":"";
+      li.innerHTML='<div class="cb">'+(on?"✓":"")+'</div><span>'+item+'</span>';
+      li.onclick=function(){
+        var s=LS(SYLLKEY,{});
+        if(s[id]) delete s[id]; else s[id]=true;
+        LSSet(SYLLKEY,s); renderSkills();
+      };
+      ul.appendChild(li);
+    });
+  });
+}
+
+/* ====== Tabs ====== */
+document.querySelectorAll("nav button").forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll("nav button").forEach(function(x){x.classList.remove("active");});
+    document.querySelectorAll("section").forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    document.getElementById(b.getAttribute("data-tab")).classList.add("active");
+  };
+});
+
+/* ====== 启动 ====== */
+renderHeader(); renderToday(); renderRoadmap(); renderSkills();
+</script>
+</body>
+</html>

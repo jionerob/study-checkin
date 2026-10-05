@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>68天上岸打卡</title>
+<meta name="theme-color" content="#5058e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="上岸打卡">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);font-size:16px;line-height:1.55;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom));
+  --bg:#f3f5fb;--card:#fff;--ink:#1b2233;--muted:#6b7488;--line:#e8ebf4;
+  --accent:#5058e8;--en:#0ea5e9;--sk:#8b5cf6;--ok:#16a34a;--warn:#f59e0b;--radius:16px;
+  --shadow:0 4px 18px rgba(30,40,90,.07)}
+.wrap{max-width:560px;margin:0 auto}
+
+/* ---- APP BAR ---- */
+.appbar{position:sticky;top:0;z-index:40;color:#fff;
+  background:linear-gradient(135deg,#5058e8,#7a5cf0 55%,#9b5cf0);
+  padding:calc(12px + env(safe-area-inset-top)) 16px 15px;border-radius:0 0 22px 22px;
+  box-shadow:0 8px 26px rgba(80,88,232,.30)}
+.appbar .r1{display:flex;justify-content:space-between;align-items:baseline}
+.appbar .title{font-size:18px;font-weight:800;letter-spacing:.3px}
+.appbar .date{font-size:12.5px;opacity:.9}
+.stats{display:flex;gap:9px;margin-top:12px}
+.stat{flex:1;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);
+  border-radius:12px;padding:8px 6px;text-align:center;backdrop-filter:blur(6px)}
+.stat b{display:block;font-size:20px;font-weight:800;line-height:1.1}
+.stat.hot b{color:#ffe28a}
+.stat small{font-size:10.5px;opacity:.9}
+.bar{height:9px;background:rgba(255,255,255,.28);border-radius:99px;overflow:hidden;margin-top:12px}
+.bar>i{display:block;height:100%;width:0;background:#fff;border-radius:99px;transition:width .4s}
+
+/* ---- TABS ---- */
+.tab{display:none;padding:14px 14px 4px;animation:fi .22s ease}
+.tab.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.card h2{font-size:16px;margin:0 0 3px;display:flex;align-items:center;gap:7px}
+.card .hint{color:var(--muted);font-size:12.5px;margin-bottom:12px}
+
+/* ---- TASKS ---- */
+.gtitle{font-size:13px;font-weight:800;color:#33405c;margin:15px 2px 9px;display:flex;align-items:center;gap:8px}
+.gtitle .dot{width:9px;height:9px;border-radius:50%}
+.dot.en{background:var(--en)}.dot.sk{background:var(--sk)}
+.todo{display:flex;align-items:flex-start;gap:12px;padding:13px;border:1.5px solid var(--line);
+  border-radius:14px;margin-bottom:9px;background:#fdfdff;transition:.15s;min-height:56px}
+.todo:active{transform:scale(.985)}
+.todo.done{background:#f2fbf5;border-color:#c3ecd2}
+.box{flex:0 0 24px;width:24px;height:24px;border:2.5px solid #c7cbdc;border-radius:8px;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;font-weight:800}
+.todo.done .box{background:var(--ok);border-color:var(--ok)}
+.todo .body{flex:1;min-width:0}
+.todo .t{font-weight:700;font-size:15.5px}
+.todo.done .t{text-decoration:line-through;color:var(--muted)}
+.todo .s{font-size:12.5px;color:var(--muted);margin-top:3px}
+.todo .s b{color:var(--accent)}
+.todo .tm{flex:0 0 auto;font-size:11.5px;font-weight:700;color:var(--muted);background:#eef1f9;
+  border-radius:8px;padding:3px 8px}
+.banner{display:none;text-align:center;font-weight:800;color:var(--ok);background:#effaf3;
+  border:1.5px dashed #b6e5c7;border-radius:14px;padding:16px;margin-top:6px}
+.banner.show{display:block;animation:fi .3s}
+
+/* ---- WEEK CARDS ---- */
+.wk{border:1.5px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden;background:#fdfdff}
+.wk.cur{border-color:var(--warn);box-shadow:0 6px 18px rgba(245,158,11,.16)}
+.wkhead{display:flex;align-items:center;gap:9px;padding:13px;cursor:pointer;background:#fff}
+.wkhead .no{font-weight:800;font-size:15px}
+.wkhead .rg{font-size:12px;color:var(--muted)}
+.wkhead .ph{font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;margin-left:auto}
+.ph1{background:#e6f5ff;color:#0b7fb8}.ph2{background:#f3ecff;color:#7a4fd0}.ph3{background:#ffefe0;color:#c9700a}
+.wkhead .arw{font-size:12px;color:var(--muted);transition:.2s}
+.wk.open .arw{transform:rotate(180deg)}
+.wkbody{display:none;padding:0 13px 13px;font-size:13.5px}
+.wk.open .wkbody{display:block}
+.wkline{display:flex;gap:8px;padding:6px 0;border-top:1px dashed var(--line)}
+.wkline .k{flex:0 0 52px;font-weight:700;color:#33405c;font-size:12.5px}
+
+/* ---- CLASS ---- */
+.seg{display:flex;gap:8px;margin-bottom:12px}
+.seg button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:9px;font:inherit;
+  font-size:13.5px;font-weight:700;color:var(--muted)}
+.seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.day{border:1.5px solid var(--line);border-radius:13px;margin-bottom:9px;overflow:hidden}
+.day .dh{padding:8px 12px;background:#f6f7fd;font-weight:800;font-size:13.5px;display:flex;gap:8px;align-items:center}
+.day .dh .free{margin-left:auto;font-size:11px;font-weight:700;color:var(--ok)}
+.cls{display:flex;gap:10px;padding:9px 12px;border-top:1px solid var(--line);align-items:center}
+.cls .tm2{flex:0 0 78px;font-size:12px;font-weight:700;color:var(--accent)}
+.cls .nm{font-size:13.5px;font-weight:650}
+.cls .rm{font-size:11.5px;color:var(--muted)}
+.cls.par{opacity:.42}
+.tag{font-size:10px;font-weight:800;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:middle}
+.tag.odd{background:#e6f5ff;color:#0b7fb8}.tag.even{background:#ffe9f2;color:#c02b6a}
+
+/* ---- SKILL ---- */
+.track{border:1.5px solid var(--line);border-radius:14px;padding:13px;margin-bottom:11px;background:#fdfdff}
+.track h3{font-size:14.5px;margin:0 0 9px}
+.syll{list-style:none;margin:0;padding:0;font-size:13.5px}
+.syll li{display:flex;gap:10px;padding:8px 2px;align-items:flex-start;border-top:1px dashed var(--line)}
+.syll li:first-child{border-top:0}
+.cb{flex:0 0 18px;width:18px;height:18px;border:2px solid #ccd0e2;border-radius:6px;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:800}
+.syll li.done .cb{background:var(--ok);border-color:var(--ok)}
+.syll li.done span{text-decoration:line-through;color:#9aa2b6}
+
+/* ---- MISC ---- */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl td,.tbl th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left;vertical-align:top}
+.tbl th{font-size:12px;color:var(--muted);background:#f7f8fd}
+.res a{display:flex;flex-direction:column;gap:1px;text-decoration:none;color:var(--ink);
+  border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:9px;background:#fdfdff}
+.res a:active{border-color:var(--accent)}
+.res .rt{font-weight:700;font-size:14px}
+.res .rd{font-size:12px;color:var(--muted)}
+.note{background:#f6f7fd;border-left:4px solid var(--accent);border-radius:0 10px 10px 0;
+  padding:11px 13px;font-size:13px;color:#33405c;margin-top:10px}
+.note.warn{border-left-color:var(--warn)}
+.btn{display:block;width:100%;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:13px;
+  font:inherit;font-size:14px;font-weight:700;color:#b42318;margin-top:9px}
+
+/* ---- BOTTOM NAV ---- */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;background:#fff;
+  border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  box-shadow:0 -4px 18px rgba(30,40,90,.06)}
+.tabbar button{flex:1;border:0;background:none;font:inherit;color:#9aa2b6;display:flex;flex-direction:column;
+  align-items:center;gap:1px;font-size:10.5px;font-weight:700;padding:5px 0;border-radius:12px}
+.tabbar button .ic{font-size:20px;line-height:1.2}
+.tabbar button.active{color:var(--accent)}
+.tabbar button.active .ic{transform:translateY(-1px)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="appbar">
+    <div class="r1">
+      <div class="title">🏁 68天上岸打卡</div>
+      <div class="date" id="app-date">—</div>
+    </div>
+    <div class="stats">
+      <div class="stat hot"><b id="s-exam">68</b><small>天到四级</small></div>
+      <div class="stat"><b id="s-day">1</b><small>/ 68 已过</small></div>
+      <div class="stat"><b id="s-streak">0</b><small>连续打卡</small></div>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+  </header>
+
+  <!-- ===== 打卡 ===== -->
+  <section class="tab active" id="t-today">
+    <div class="card">
+      <h2>📌 今日任务 <span id="wk-tag" style="font-size:11.5px;color:var(--muted);font-weight:600"></span></h2>
+      <div class="hint" id="wk-focus"></div>
+
+      <div class="gtitle"><span class="dot en"></span> 英语 · 四级（约 2 小时）</div>
+      <div id="list-en"></div>
+      <div class="gtitle"><span class="dot sk"></span> 专业技能（约 2.5 小时）</div>
+      <div id="list-sk"></div>
+
+      <div class="banner" id="banner">🎉 今天全部完成，太棒了！明天见 👋</div>
+      <div class="note warn"><b>时间不够？</b>按此优先级砍：① SQL ② 单词 ③ 听力，其余顺延。真练 2 小时 > 空想 5 小时。</div>
+    </div>
+  </section>
+
+  <!-- ===== 计划 ===== -->
+  <section class="tab" id="t-plan">
+    <div class="card">
+      <h2>🗺️ 十周作战路线</h2>
+      <div class="hint">点开每周看重点。橙色 = 你当前所在周。</div>
+      <div id="weeks"></div>
+    </div>
+    <div class="card">
+      <h2>🎯 四级速览（总分 710 · 425 过线）</h2>
+      <table class="tbl">
+        <thead><tr><th>部分</th><th>分值</th><th>关键打法</th></tr></thead>
+        <tbody>
+          <tr><td>听力</td><td>35%</td><td>精听&gt;泛听，1篇听3遍，抓 but/however</td></tr>
+          <tr><td>阅读</td><td>35%</td><td>仔细阅读分值最高，先看题再定位</td></tr>
+          <tr><td>写作</td><td>15%</td><td>11月起背模板，考前一天默写</td></tr>
+          <tr><td>翻译</td><td>15%</td><td>主谓宾骨架，背中国主题词</td></tr>
+        </tbody>
+      </table>
+      <div class="note">真题是唯一真理：近 5 年 10 套吃透，胜过刷 100 个 APP。</div>
+    </div>
+  </section>
+
+  <!-- ===== 课表 ===== -->
+  <section class="tab" id="t-class">
+    <div class="card">
+      <h2>📅 我的课表</h2>
+      <div class="hint" id="wk-hint"></div>
+      <div class="seg">
+        <button data-par="odd">单周</button>
+        <button data-par="even">双周</button>
+      </div>
+      <div id="days"></div>
+      <div class="note">🟢 <b>黄金时段：</b>周四上午、周五下午、周六日全天几乎没课 —— 集中拿来刷 SQL 和四级真题。有课的日子只做"单词 + 听力 + 小段 SQL"。</div>
+    </div>
+  </section>
+
+  <!-- ===== 技能 ===== -->
+  <section class="tab" id="t-skill">
+    <div class="card">
+      <h2>💻 技能地图</h2>
+      <div class="hint">勾选已掌握的知识点。先 SQL，再 Linux，Java 每天固定投入。</div>
+      <div class="track"><h3>🗄️ SQL（最高优先级）</h3><ul class="syll" data-track="sql"></ul></div>
+      <div class="track"><h3>🐧 Linux（边用边学）</h3><ul class="syll" data-track="linux"></ul></div>
+      <div class="track"><h3>☕ Java（长线投入）</h3><ul class="syll" data-track="java"></ul></div>
+    </div>
+  </section>
+
+  <!-- ===== 更多 ===== -->
+  <section class="tab" id="t-more">
+    <div class="card">
+      <h2>📚 打开即用的资源</h2>
+      <div class="res">
+        <a href="https://www.nowcoder.com/exam/oj?tab=SQL%E7%AF%87" target="_blank"><span class="rt">牛客网 · SQL 题库</span><span class="rd">数据岗必备，一题一题刷</span></a>
+        <a href="https://leetcode.cn/problemset/database/" target="_blank"><span class="rt">LeetCode · 数据库</span><span class="rd">进阶 SQL，面试高频</span></a>
+        <a href="https://sqlzoo.net/" target="_blank"><span class="rt">SQLZoo</span><span class="rd">英文交互式 SQL 入门</span></a>
+        <a href="https://www.runoob.com/linux/linux-tutorial.html" target="_blank"><span class="rt">菜鸟教程 · Linux</span><span class="rd">命令速查，配 Ubuntu 虚拟机练</span></a>
+        <a href="https://liaoxuefeng.com/books/java/introduction/index.html" target="_blank"><span class="rt">廖雪峰 · Java 教程</span><span class="rd">免费系统教程</span></a>
+        <a href="https://www.bilibili.com/video/BV1fh411y7R8" target="_blank"><span class="rt">B站 · 韩顺平 Java</span><span class="rd">零基础口碑最好的视频课</span></a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>⚙️ 设置</h2>
+      <div class="hint">数据保存在本机浏览器，换手机/清缓存会重置。</div>
+      <button class="btn" id="reset-today">清空今日打卡</button>
+      <button class="btn" id="reset-all">清空全部记录</button>
+    </div>
+  </section>
+
+  <nav class="tabbar">
+    <button data-tab="t-today" class="active"><span class="ic">✅</span>打卡</button>
+    <button data-tab="t-plan"><span class="ic">🗺️</span>计划</button>
+    <button data-tab="t-class"><span class="ic">📅</span>课表</button>
+    <button data-tab="t-skill"><span class="ic">💻</span>技能</button>
+    <button data-tab="t-more"><span class="ic">📚</span>更多</button>
+  </nav>
+</div>
+
+<script>
+/* ===== 日期 ===== */
+var START=new Date(2026,9,5), EXAM=new Date(2026,11,12);
+var SEM6_START=new Date(2026,9,5);   // 10-05 是第 6 周
+
+/* ===== 十周路线 ===== */
+var WEEKS=[
+ {n:1,r:"10.05–10.11",ph:1,en:"听力:短篇新闻精听; 语法:基本句型+时态",sql:"装 MySQL; SELECT/WHERE/ORDER BY/LIMIT",linux:"命令行入门 ls/cd/pwd/mkdir/man",java:"装 JDK+IDEA; HelloWorld; 变量与数据类型"},
+ {n:2,r:"10.12–10.18",ph:1,en:"听力:长对话; 语法:名词性/定语从句",sql:"聚合函数; GROUP BY / HAVING",linux:"文件操作; 权限 chmod",java:"运算符; 流程控制 if/switch"},
+ {n:3,r:"10.19–10.25",ph:1,en:"仔细阅读+题干定位; 长难句",sql:"多表连接 INNER/LEFT/RIGHT JOIN",linux:"管道/重定向; grep/find; vim",java:"循环 for/while; 方法"},
+ {n:4,r:"10.26–11.01",ph:1,en:"选词填空; 翻译入门",sql:"子查询; 常用函数",linux:"压缩 tar; 进程 ps/top/kill; apt",java:"数组; 字符串常用方法"},
+ {n:5,r:"11.02–11.08",ph:2,en:"真题第1套(摸底)+错题分析",sql:"窗口函数 ROW_NUMBER/RANK",linux:"环境变量; 网络 ping/curl; ssh",java:"面向对象: 类/对象/封装"},
+ {n:6,r:"11.09–11.15",ph:2,en:"听力 & 阅读专项突破",sql:"索引/事务/视图 概念",linux:"Shell 脚本: 变量/if/for",java:"继承/多态/接口"},
+ {n:7,r:"11.16–11.22",ph:2,en:"写作模板+仿写; 翻译专项",sql:"牛客 SQL 进阶综合",linux:"脚本练习; crontab",java:"集合 List/Map/Set"},
+ {n:8,r:"11.23–11.29",ph:2,en:"套题2–3套; 长篇匹配技巧",sql:"复习+多表综合题",linux:"维护命令; Hadoop 常用命令",java:"异常处理; IO 流"},
+ {n:9,r:"11.30–12.06",ph:3,en:"隔天模考+复盘; 作文默写",sql:"保持刷题 每天2题",linux:"复习常用命令",java:"多线程入门; 小项目开工"},
+ {n:10,r:"12.07–12.12",ph:3,en:"全真模拟; 高频词; 调作息",sql:"查漏补缺",linux:"复盘",java:"完成小项目(学生管理系统)"}
+];
+
+/* ===== 每日任务 ===== */
+var ITEMS=[
+ {id:"en1",tr:"en",t:"单词打卡",s:"50 个新词 + 复习昨天的",dyn:null,tm:"30m"},
+ {id:"en2",tr:"en",t:"听力精听",s:"1 篇四级真题：盲听→听写→跟读",dyn:null,tm:"30m"},
+ {id:"en3",tr:"en",t:"阅读训练",s:"1 篇仔细阅读 + 3 个长难句",dyn:null,tm:"40m"},
+ {id:"en4",tr:"en",t:"四级本周专项",s:"",dyn:"en",tm:"30m"},
+ {id:"sk1",tr:"sk",t:"Linux",s:"",dyn:"linux",tm:"30m"},
+ {id:"sk2",tr:"sk",t:"SQL",s:"",dyn:"sql",tm:"60m"},
+ {id:"sk3",tr:"sk",t:"Java",s:"",dyn:"java",tm:"60m"},
+ {id:"sk4",tr:"sk",t:"动手实践",s:"敲代码/做题——只许动手，不许只看",dyn:null,tm:"15m"}
+];
+
+/* ===== 技能地图 ===== */
+var SYLL={
+ sql:["装 MySQL & 基本概念（库/表/字段/主键）","SELECT / WHERE / ORDER BY / LIMIT","聚合函数 + GROUP BY + HAVING",
+   "多表连接 INNER/LEFT/RIGHT JOIN","子查询 & 常用函数","窗口函数 ROW_NUMBER/RANK",
+   "索引、事务、视图概念","牛客 SQL 题库刷完入门+进阶"],
+ linux:["目录导航 ls/cd/pwd/mkdir/touch","文件操作 cp/mv/rm/cat/less","权限 chmod/chown","管道 | 与重定向 > >>",
+   "查找 grep/find","vim 基本操作","压缩解压 tar/gzip/zip","进程 ps/top/kill + apt 装软件",
+   "环境变量 + ping/curl + ssh","Shell 脚本 + crontab"],
+ java:["装 JDK+IDEA，跑通 HelloWorld","变量与数据类型","流程控制 if/switch/for/while","方法定义与调用",
+   "数组 + String 常用方法","面向对象：类/对象/封装","继承/多态/接口","集合 List/Map/Set",
+   "异常处理","IO 流文件读写","多线程入门","小项目：学生管理系统"]
+};
+
+/* ===== 课表 ===== */
+var DAYN=["","周一","周二","周三","周四","周五","周六","周日"];
+var CLASSES=[
+ {d:1,p:"3-4",t:"10:00–11:40",n:"数据挖掘与分析",r:"文二教301",par:"all"},
+ {d:1,p:"5-6",t:"14:00–15:40",n:"数据挖掘与分析(上机)",r:"文一教204",par:"all"},
+ {d:2,p:"3-4",t:"10:00–11:40",n:"云计算与大数据技术",r:"文二教301",par:"odd"},
+ {d:2,p:"7-8",t:"16:00–17:40",n:"云计算与大数据技术(上机)",r:"文三教N202",par:"all"},
+ {d:3,p:"1-2",t:"08:00–09:40",n:"Spark大数据分析",r:"文一教513-2",par:"all"},
+ {d:3,p:"5-6",t:"14:00–15:40",n:"数据库与SQL基础",r:"文一教119",par:"odd"},
+ {d:3,p:"7-8",t:"16:00–17:40",n:"Spark大数据分析(上机)",r:"文三教N306",par:"all"},
+ {d:4,p:"5-6",t:"14:00–15:40",n:"形势与政策",r:"文一教208",par:"all"},
+ {d:4,p:"7-8",t:"16:00–17:40",n:"数据库与SQL基础(上机)",r:"文三教N205",par:"all"},
+ {d:5,p:"3-4",t:"10:00–11:40",n:"Scala编程基础",r:"文一教601",par:"odd"}
+];
+
+/* ===== 工具 ===== */
+function d0(x){x=new Date(x);x.setHours(0,0,0,0);return x}
+function dbtw(a,b){return Math.round((d0(b)-d0(a))/86400000)}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function key(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function LS(k,v){try{var s=localStorage.getItem(k);return s?JSON.parse(s):v}catch(e){return v}}
+function SS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var CK="checkin_v2", SY="syll_v2";
+
+function weekIdx(){return clamp(Math.floor(dbtw(START,new Date())/7),0,WEEKS.length-1)}
+function curParity(){var w=6+Math.floor(dbtw(SEM6_START,new Date())/7);return (w%2===0)?"even":"odd"}
+function semWeek(){return 6+Math.floor(dbtw(SEM6_START,new Date())/7)}
+
+/* ---- header ---- */
+function header(){
+  var n=new Date();
+  var wd=["日","一","二","三","四","五","六"][n.getDay()];
+  document.getElementById("app-date").textContent=(n.getMonth()+1)+"月"+n.getDate()+"日 周"+wd;
+  var de=dbtw(n,EXAM);
+  document.getElementById("s-exam").textContent=de>0?de:(de===0?"今日!":"完");
+  document.getElementById("s-day").textContent=clamp(dbtw(START,n)+1,1,68);
+  document.getElementById("s-streak").textContent=streak();
+}
+
+/* ---- today ---- */
+function renderToday(){
+  var W=WEEKS[weekIdx()], store=LS(CK,{}), t=store[key()]||{};
+  document.getElementById("wk-tag").textContent="· 第"+W.n+"周 "+W.r;
+  var ph=W.ph===1?"基础期":W.ph===2?"强化期":"冲刺期";
+  document.getElementById("wk-focus").innerHTML="<b>"+ph+"</b>本周重点 → "+W.en+" ｜ SQL:"+W.sql+" ｜ Linux:"+W.linux+" ｜ Java:"+W.java;
+  var le=document.getElementById("list-en"), ls=document.getElementById("list-sk");
+  le.innerHTML=ls.innerHTML=""; var done=0;
+  ITEMS.forEach(function(it){
+    var sub=it.dyn?("本周："+W[it.dyn]):it.s;
+    var el=document.createElement("div");
+    el.className="todo"+(t[it.id]?" done":"");
+    el.innerHTML='<div class="box">'+(t[it.id]?"✓":"")+'</div><div class="body"><div class="t">'+it.t+
+      '</div><div class="s">'+sub+'</div></div><div class="tm">'+it.tm+'</div>';
+    el.onclick=function(){toggle(it.id)};
+    (it.tr==="en"?le:ls).appendChild(el);
+    if(t[it.id])done++;
+  });
+  document.getElementById("bar").style.width=(done/ITEMS.length*100)+"%";
+  document.getElementById("banner").classList.toggle("show",done===ITEMS.length);
+  header();
+}
+function toggle(id){
+  var store=LS(CK,{}),t=store[key()]||{};
+  if(t[id])delete t[id];else t[id]=true;
+  if(Object.keys(t).length)store[key()]=t;else delete store[key()];
+  SS(CK,store);renderToday();
+}
+function streak(){
+  var store=LS(CK,{}),s=0,d=new Date();
+  if(!store[key(d)]||Object.keys(store[key(d)]).length<ITEMS.length*0.6)d.setDate(d.getDate()-1);
+  for(var i=0;i<400;i++){var r=store[key(d)];if(r&&Object.keys(r).length>=ITEMS.length*0.6){s++;d.setDate(d.getDate()-1)}else break}
+  return s;
+}
+
+/* ---- plan ---- */
+function renderPlan(){
+  var box=document.getElementById("weeks"), wi=weekIdx();
+  box.innerHTML="";
+  WEEKS.forEach(function(W,i){
+    var d=document.createElement("div");
+    d.className="wk"+(i===wi?" cur open":"");
+    d.innerHTML='<div class="wkhead"><span class="no">第'+W.n+'周</span><span class="rg">'+W.r+'</span>'+
+      '<span class="ph ph'+W.ph+'">'+(W.ph===1?"基础":W.ph===2?"强化":"冲刺")+'</span><span class="arw">▼</span></div>'+
+      '<div class="wkbody">'+
+      '<div class="wkline"><span class="k">🅴 英语</span><span>'+W.en+'</span></div>'+
+      '<div class="wkline"><span class="k">🗄️ SQL</span><span>'+W.sql+'</span></div>'+
+      '<div class="wkline"><span class="k">🐧 Linux</span><span>'+W.linux+'</span></div>'+
+      '<div class="wkline"><span class="k">☕ Java</span><span>'+W.java+'</span></div></div>';
+    d.querySelector(".wkhead").onclick=function(){d.classList.toggle("open")};
+    box.appendChild(d);
+  });
+}
+
+/* ---- class ---- */
+var curPar="odd";
+function renderClass(){
+  document.getElementById("wk-hint").textContent="现在约第 "+semWeek()+" 周 · "+(curParity()==="odd"?"单周":"双周")+"（可手动切换查看）";
+  document.querySelectorAll(".seg button").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-par")===curPar)});
+  var box=document.getElementById("days");box.innerHTML="";
+  for(var d=1;d<=7;d++){
+    var list=CLASSES.filter(function(c){return c.d===d&&(c.par==="all"||c.par===curPar)});
+    var FREEMAP={1:"晚上空",2:"中午空",3:"下午14–16点空",4:"上午全空 ⭐",5:"基本全天空 ⭐⭐",6:"全天空 ⭐⭐⭐",7:"全天空 ⭐⭐⭐"};
+    var free=FREEMAP[d]||"";
+    var dd=document.createElement("div");dd.className="day";
+    var html='<div class="dh">'+DAYN[d]+(free?'<span class="free">🟢 '+free+'</span>':'')+'</div>';
+    if(!list.length){html+='<div class="cls"><span class="tm2">—</span><span class="nm" style="color:var(--muted)">没有课 🎉</span></div>';}
+    list.sort(function(a,b){return a.p<b.p?-1:1}).forEach(function(c){
+      var tag=c.par==="all"?"":('<span class="tag '+c.par+'">'+(c.par==="odd"?"单周":"双周")+'</span>');
+      html+='<div class="cls"><span class="tm2">'+c.t+'</span><span><span class="nm">'+c.n+tag+'</span><br><span class="rm">'+c.r+' · 第'+c.p+'节</span></span></div>';
+    });
+    dd.innerHTML=html;box.appendChild(dd);
+  }
+}
+
+/* ---- skill ---- */
+function renderSkill(){
+  var s=LS(SY,{});
+  document.querySelectorAll(".syll").forEach(function(ul){
+    var tr=ul.getAttribute("data-track");ul.innerHTML="";
+    SYLL[tr].forEach(function(item,i){
+      var id=tr+"-"+i,on=s[id],li=document.createElement("li");
+      li.className=on?"done":"";
+      li.innerHTML='<div class="cb">'+(on?"✓":"")+'</div><span>'+item+'</span>';
+      li.onclick=function(){var x=LS(SY,{});if(x[id])delete x[id];else x[id]=true;SS(SY,x);renderSkill()};
+      ul.appendChild(li);
+    });
+  });
+}
+
+/* ---- tabs & settings ---- */
+document.querySelectorAll(".tabbar button").forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll(".tabbar button").forEach(function(x){x.classList.remove("active")});
+    document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active")});
+    b.classList.add("active");document.getElementById(b.getAttribute("data-tab")).classList.add("active");
+    window.scrollTo(0,0);
+  };
+});
+document.querySelectorAll(".seg button").forEach(function(b){
+  b.onclick=function(){curPar=b.getAttribute("data-par");renderClass()};
+});
+document.getElementById("reset-today").onclick=function(){
+  if(confirm("清空今天的打卡记录？")){var s=LS(CK,{});delete s[key()];SS(CK,s);renderToday();}
+};
+document.getElementById("reset-all").onclick=function(){
+  if(confirm("清空全部记录（打卡 + 技能），不可恢复！")){SS(CK,{});SS(SY,{});renderToday();renderSkill();}
+};
+
+/* ---- init ---- */
+header();renderToday();renderPlan();renderClass();renderSkill();
+
+/* ---- PWA ---- */
+if("serviceWorker" in navigator){window.addEventListener("load",function(){
+  navigator.serviceWorker.register("sw.js").catch(function(){});
+});}
+</script>
+</body>
+</html>
